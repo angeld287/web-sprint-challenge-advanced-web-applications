@@ -56,23 +56,31 @@ export default function App() {
     redirectToArticles();
   }
 
-  const getArticles = async () => {
+  const getArticles = () => {
     // ✨ implement
     // We should flush the message state, turn on the spinner
     setMessage('');
     setSpinnerOn(true);
 
     // and launch an authenticated request to the proper endpoint.
-    const result = await axiosWithAuth.get(articlesUrl);
-    const { articles, message } = (await result.json())
-    // On success, we should set the articles in their proper state and
-    setArticles(articles);
-    // put the server success message in its proper state.
-    setMessage(message);
-    // If something goes wrong, check the status of the response:
-    // if it's a 401 the token might have gone bad, and we should redirect to login.
-    // Don't forget to turn off the spinner!
-    setSpinnerOn(false);
+    axiosWithAuth().get(articlesUrl).then(result => {
+      const { articles, message } = result.data;
+      // On success, we should set the articles in their proper state and
+      setArticles(articles);
+      // put the server success message in its proper state.
+      setMessage(message);
+      // If something goes wrong, check the status of the response:
+      // if it's a 401 the token might have gone bad, and we should redirect to login.
+      setSpinnerOn(false);
+
+    }).catch(error => {
+      setSpinnerOn(false);
+      setMessage(error.message);
+      if(error.request.status === 401) navigate('/')
+      // Don't forget to turn off the spinner?
+    });
+  
+    
   }
 
   const postArticle = async (newArticle) => {
@@ -86,14 +94,15 @@ export default function App() {
     setSpinnerOn(true);
 
     // and launch an authenticated request to the proper endpoint.
-    const result = await axiosWithAuth.post(articlesUrl, newArticle);
-    const { article, message } = (await result.json())
+    const result = await axiosWithAuth().post(articlesUrl, newArticle);
+    const { article, message } = result.data
     // On success, we should set the articles in their proper state and
     setArticles([...articles, article]);
     // put the server success message in its proper state.
     setMessage(message);
     // If something goes wrong, check the status of the response:
     // if it's a 401 the token might have gone bad, and we should redirect to login.
+    if(result.status === 401) navigate('/')
     // Don't forget to turn off the spinner!
     setSpinnerOn(false);
   }
@@ -107,19 +116,20 @@ export default function App() {
     setSpinnerOn(true);
 
     // and launch an authenticated request to the proper endpoint.
-    const result = await axiosWithAuth.put(`${articlesUrl}/${article_id}`, newArticle);
-    const { article, message } = (await result.json())
+    const result = await axiosWithAuth().put(`${articlesUrl}/${article_id}`, newArticle);
+    const { article, message } = result.data
     // On success, we should set the articles in their proper state and
     setArticles([...articles.filter(art => art.article_id !== article_id), article]);
     // put the server success message in its proper state.
     setMessage(message);
     // If something goes wrong, check the status of the response:
     // if it's a 401 the token might have gone bad, and we should redirect to login.
+    if(result.status === 401) navigate('/')
     // Don't forget to turn off the spinner!
     setSpinnerOn(false);
   }
 
-  const deleteArticle = async (article_id) => {
+  const deleteArticle = (article_id) => {
     // ✨ implement
 
     // We should flush the message state, turn on the spinner
@@ -127,16 +137,20 @@ export default function App() {
     setSpinnerOn(true);
 
     // and launch an authenticated request to the proper endpoint.
-    const result = await axiosWithAuth.delete(`${articlesUrl}/${article_id}`);
-    const { message } = (await result.json())
-    // On success, we should set the articles in their proper state and
-    setArticles([...articles.filter(art => art.article_id !== article_id)]);
-    // put the server success message in its proper state.
-    setMessage(message);
-    // If something goes wrong, check the status of the response:
-    // if it's a 401 the token might have gone bad, and we should redirect to login.
-    // Don't forget to turn off the spinner!
-    setSpinnerOn(false);
+    axiosWithAuth().delete(`${articlesUrl}/${article_id}`).then(result => {
+      // On success, we should set the articles in their proper state and
+      const { message } = result.data
+      // put the server success message in its proper state.
+      setMessage(message);
+      setArticles([...articles.filter(art => art.article_id !== article_id)]);
+
+      setSpinnerOn(false);
+    }).catch(error => {
+      setSpinnerOn(false);
+      setMessage(error.message);
+      if(error.request.status === 401) navigate('/')
+      // Don't forget to turn off the spinner?
+    });
   }
 
   return (
@@ -156,7 +170,7 @@ export default function App() {
           <Route path="articles" element={
             <>
               <ArticleForm {...{postArticle, updateArticle, setCurrentArticleId}}/>
-              <Articles {...{setCurrentArticleId, currentArticleId, getArticles, deleteArticle}}/>
+              <Articles {...{setCurrentArticleId, currentArticleId, getArticles, deleteArticle, articles}}/>
             </>
           } />
         </Routes>
