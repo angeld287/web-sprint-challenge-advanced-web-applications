@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import PT from 'prop-types'
 
 const initialFormValues = {
@@ -8,6 +8,7 @@ const initialFormValues = {
 export default function LoginForm(props) {
   const [values, setValues] = useState(initialFormValues)
   // ✨ where are my props? Destructure them here
+  const { login } = props;
 
   const onChange = evt => {
     const { id, value } = evt.target
@@ -17,14 +18,16 @@ export default function LoginForm(props) {
   const onSubmit = evt => {
     evt.preventDefault()
     // ✨ implement
+    login(values)
   }
 
-  const isDisabled = () => {
+  const isDisabled = useMemo(() => {
     // ✨ implement
     // Trimmed username must be >= 3, and
     // trimmed password must be >= 8 for
     // the button to become enabled
-  }
+    return !(values.username.length >= 3 && values.password.length >= 8)
+  }, [values])
 
   return (
     <form id="loginForm" onSubmit={onSubmit}>
@@ -43,7 +46,7 @@ export default function LoginForm(props) {
         placeholder="Enter password"
         id="password"
       />
-      <button disabled={isDisabled()} id="submitCredentials">Submit credentials</button>
+      <button disabled={isDisabled} id="submitCredentials">Submit credentials</button>
     </form>
   )
 }

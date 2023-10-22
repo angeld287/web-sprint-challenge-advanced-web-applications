@@ -45,9 +45,9 @@ export default function App() {
     setMessage('');
     setSpinnerOn(true);
     // and launch a request to the proper endpoint.
-    const result = axios.post(loginUrl, JSON.stringify({ username, password}))
+    const result = await axios.post(loginUrl, { username, password})
     // On success, we should set the token to local storage in a 'token' key,
-    const { token, message } = (await result.json())
+    const { token, message } = result.data;
     localStorage.setItem('token', token);
     // put the server success message in its proper state, and redirect
     // to the Articles screen. Don't forget to turn off the spinner!
@@ -63,7 +63,7 @@ export default function App() {
     setSpinnerOn(true);
 
     // and launch an authenticated request to the proper endpoint.
-    const result = axiosWithAuth.get(articlesUrl);
+    const result = await axiosWithAuth.get(articlesUrl);
     const { articles, message } = (await result.json())
     // On success, we should set the articles in their proper state and
     setArticles(articles);
@@ -86,7 +86,7 @@ export default function App() {
     setSpinnerOn(true);
 
     // and launch an authenticated request to the proper endpoint.
-    const result = axiosWithAuth.post(articlesUrl, JSON.stringify(newArticle));
+    const result = await axiosWithAuth.post(articlesUrl, newArticle);
     const { article, message } = (await result.json())
     // On success, we should set the articles in their proper state and
     setArticles([...articles, article]);
@@ -107,7 +107,7 @@ export default function App() {
     setSpinnerOn(true);
 
     // and launch an authenticated request to the proper endpoint.
-    const result = axiosWithAuth.put(`${articlesUrl}/${article_id}`, JSON.stringify(newArticle));
+    const result = await axiosWithAuth.put(`${articlesUrl}/${article_id}`, newArticle);
     const { article, message } = (await result.json())
     // On success, we should set the articles in their proper state and
     setArticles([...articles.filter(art => art.article_id !== article_id), article]);
@@ -127,7 +127,7 @@ export default function App() {
     setSpinnerOn(true);
 
     // and launch an authenticated request to the proper endpoint.
-    const result = axiosWithAuth.delete(`${articlesUrl}/${article_id}`);
+    const result = await axiosWithAuth.delete(`${articlesUrl}/${article_id}`);
     const { message } = (await result.json())
     // On success, we should set the articles in their proper state and
     setArticles([...articles.filter(art => art.article_id !== article_id)]);
