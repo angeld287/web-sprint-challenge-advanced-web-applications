@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { NavLink, Routes, Route, useNavigate } from 'react-router-dom'
 import Articles from './Articles'
 import LoginForm from './LoginForm'
@@ -7,15 +7,26 @@ import ArticleForm from './ArticleForm'
 import Spinner from './Spinner'
 import axios, { axiosWithAuth } from '../axios'
 
-const articlesUrl = 'http://localhost:9000/api/articles'
-const loginUrl = 'http://localhost:9000/api/login'
+const articlesUrl = 'http://localhost:9000/api/articles';
+const loginUrl = 'http://localhost:9000/api/login';
 
 export default function App() {
   // ✨ MVP can be achieved with these states
   const [message, setMessage] = useState('')
   const [articles, setArticles] = useState([])
   const [currentArticleId, setCurrentArticleId] = useState()
+  const [currentArticle, setCurrentArticle] = useState()
   const [spinnerOn, setSpinnerOn] = useState(false)
+
+  useEffect(() => {
+    if(currentArticleId){
+      const selectedArticle = articles.find(article => article.article_id === currentArticleId);
+
+      if(selectedArticle) setCurrentArticle(selectedArticle);
+    }else{
+      setCurrentArticle(undefined)
+    }
+  }, [currentArticleId])
 
   // ✨ Research `useNavigate` in React Router v.6
   const navigate = useNavigate()
@@ -95,15 +106,15 @@ export default function App() {
 
     // and launch an authenticated request to the proper endpoint.
     axiosWithAuth().post(articlesUrl, newArticle).then(result => {
-      const { articles, message } = result.data;
+      const { article, message } = result.data;
       // On success, we should set the articles in their proper state and
-      setArticles(articles);
+      setArticles([...articles, article]);
       // put the server success message in its proper state.
       setMessage(message);
       // If something goes wrong, check the status of the response:
       // if it's a 401 the token might have gone bad, and we should redirect to login.
       setSpinnerOn(false);
-    }).then(error => {
+    }).catch(error => {
       setSpinnerOn(false);
       setMessage(error.message);
       if(error.request.status === 401) navigate('/')
@@ -121,15 +132,17 @@ export default function App() {
 
     // and launch an authenticated request to the proper endpoint.
     axiosWithAuth().put(`${articlesUrl}/${article_id}`, newArticle).then(result => {
-      const { articles, message } = result.data;
+      const { article, message } = result.data;
+      const indexOfArticle = articles.findIndex(article => article.article_id === article_id);
       // On success, we should set the articles in their proper state and
-      setArticles(articles);
+      setArticles([...articles.slice(0, indexOfArticle), article, ...articles.slice(indexOfArticle+1)]);
       // put the server success message in its proper state.
       setMessage(message);
+      setCurrentArticle(undefined);
       // If something goes wrong, check the status of the response:
       // if it's a 401 the token might have gone bad, and we should redirect to login.
       setSpinnerOn(false);
-    }).then(error => {
+    }).catch(error => {
       setSpinnerOn(false);
       setMessage(error.message);
       if(error.request.status === 401) navigate('/')
@@ -177,7 +190,7 @@ export default function App() {
           <Route path="/" element={<LoginForm {...{login}} />} />
           <Route path="articles" element={
             <>
-              <ArticleForm {...{postArticle, updateArticle, setCurrentArticleId}}/>
+              <ArticleForm {...{postArticle, updateArticle, setCurrentArticleId, currentArticle}}/>
               <Articles {...{setCurrentArticleId, currentArticleId, getArticles, deleteArticle, articles}}/>
             </>
           } />

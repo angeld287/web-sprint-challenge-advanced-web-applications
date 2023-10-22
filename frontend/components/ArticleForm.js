@@ -32,7 +32,7 @@ export default function ArticleForm(props) {
     // We must submit a new post or update an existing one,
     // depending on the truthyness of the `currentArticle` prop.
     if(currentArticle){
-      updateArticle(currentArticle.article_id, values);
+      updateArticle({article_id: currentArticle.article_id, newArticle: values});
     } else {
       postArticle(values)
     }
@@ -77,7 +77,7 @@ export default function ArticleForm(props) {
       </select>
       <div className="button-group">
         <button disabled={isDisabled} id="submitArticle">Submit</button>
-        <button onClick={cancel}>Cancel edit</button>
+        {currentArticle && <button onClick={cancel}>Cancel edit</button>}
       </div>
     </form>
   )
