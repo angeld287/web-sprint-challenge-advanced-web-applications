@@ -83,7 +83,7 @@ export default function App() {
     
   }
 
-  const postArticle = async (newArticle) => {
+  const postArticle = (newArticle) => {
     // ✨ implement
     // The flow is very similar to the `getArticles` function.
     // You'll know what to do! Use log statements or breakpoints
@@ -94,20 +94,24 @@ export default function App() {
     setSpinnerOn(true);
 
     // and launch an authenticated request to the proper endpoint.
-    const result = await axiosWithAuth().post(articlesUrl, newArticle);
-    const { article, message } = result.data
-    // On success, we should set the articles in their proper state and
-    setArticles([...articles, article]);
-    // put the server success message in its proper state.
-    setMessage(message);
-    // If something goes wrong, check the status of the response:
-    // if it's a 401 the token might have gone bad, and we should redirect to login.
-    if(result.status === 401) navigate('/')
-    // Don't forget to turn off the spinner!
-    setSpinnerOn(false);
+    axiosWithAuth().post(articlesUrl, newArticle).then(result => {
+      const { articles, message } = result.data;
+      // On success, we should set the articles in their proper state and
+      setArticles(articles);
+      // put the server success message in its proper state.
+      setMessage(message);
+      // If something goes wrong, check the status of the response:
+      // if it's a 401 the token might have gone bad, and we should redirect to login.
+      setSpinnerOn(false);
+    }).then(error => {
+      setSpinnerOn(false);
+      setMessage(error.message);
+      if(error.request.status === 401) navigate('/')
+      // Don't forget to turn off the spinner?
+    });
   }
 
-  const updateArticle = async ({ article_id, newArticle }) => {
+  const updateArticle = ({ article_id, newArticle }) => {
     // ✨ implement
     // You got this!
 
@@ -116,17 +120,21 @@ export default function App() {
     setSpinnerOn(true);
 
     // and launch an authenticated request to the proper endpoint.
-    const result = await axiosWithAuth().put(`${articlesUrl}/${article_id}`, newArticle);
-    const { article, message } = result.data
-    // On success, we should set the articles in their proper state and
-    setArticles([...articles.filter(art => art.article_id !== article_id), article]);
-    // put the server success message in its proper state.
-    setMessage(message);
-    // If something goes wrong, check the status of the response:
-    // if it's a 401 the token might have gone bad, and we should redirect to login.
-    if(result.status === 401) navigate('/')
-    // Don't forget to turn off the spinner!
-    setSpinnerOn(false);
+    axiosWithAuth().put(`${articlesUrl}/${article_id}`, newArticle).then(result => {
+      const { articles, message } = result.data;
+      // On success, we should set the articles in their proper state and
+      setArticles(articles);
+      // put the server success message in its proper state.
+      setMessage(message);
+      // If something goes wrong, check the status of the response:
+      // if it's a 401 the token might have gone bad, and we should redirect to login.
+      setSpinnerOn(false);
+    }).then(error => {
+      setSpinnerOn(false);
+      setMessage(error.message);
+      if(error.request.status === 401) navigate('/')
+      // Don't forget to turn off the spinner?
+    });
   }
 
   const deleteArticle = (article_id) => {
