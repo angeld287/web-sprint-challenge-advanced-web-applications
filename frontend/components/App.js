@@ -43,7 +43,7 @@ export default function App() {
     // ✨ implement
     // If a token is in local storage it should be removed,
     const token = localStorage.getItem('token');
-    if(token !== null) localStorage.setItem('token', null);
+    if(token) localStorage.removeItem('token');
     // and a message saying "Goodbye!" should be set in its proper state.
     setMessage('Goodbye!');
     // In any case, we should redirect the browser back to the login screen, using the helper above.
@@ -111,6 +111,7 @@ export default function App() {
       setArticles([...articles, article]);
       // put the server success message in its proper state.
       setMessage(message);
+      setCurrentArticle(null);
       // If something goes wrong, check the status of the response:
       // if it's a 401 the token might have gone bad, and we should redirect to login.
       setSpinnerOn(false);
@@ -177,7 +178,7 @@ export default function App() {
   return (
     // ✨ fix the JSX: `Spinner`, `Message`, `LoginForm`, `ArticleForm` and `Articles` expect props ❗
     <>
-      <Spinner />
+      <Spinner on={spinnerOn} />
       <Message {...{message}} />
       <button id="logout" onClick={logout}>Logout from app</button>
       <div id="wrapper" style={{ opacity: spinnerOn ? "0.25" : "1" }}> {/* <-- do not change this line */}

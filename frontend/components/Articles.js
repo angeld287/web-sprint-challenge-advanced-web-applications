@@ -11,7 +11,9 @@ export default function Articles(props) {
   // ✨ implement conditional logic: if no token exists
   // we should render a Navigate to login screen (React Router v.6)
   useEffect(() => {
-    if(token === null) return navigate('/');
+    if(!token) {
+      return navigate('/');
+    }
     if(articles.length === 0) getArticles();
   }, [token])
 
